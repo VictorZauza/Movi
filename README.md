@@ -1,4 +1,4 @@
-# Movi – Buscador de filmes
+# Movi
 
 Aplicativo mobile criado com Expo que permite buscar filmes no The Movie Database (TMDB), favoritar títulos, manter uma lista “Quero ver” e utilizar dados offline com cache em SQLite.
 
