@@ -59,11 +59,11 @@ npx expo start
 - Estatísticas do usuário (favoritos, assistidos, nota média, gênero/ano mais assistido, filme mais avaliado)
 
 ## Recursos visuais (screenshots)
-Adicione suas capturas na pasta `docs/screens` (sugestão) e referencie-as aqui:
-- Home / busca: `![Home](docs/screens/home.png)`
-- Em alta: `![Em alta](docs/screens/top.png)`
-- Minha lista: `![Minha lista](docs/screens/library.png)`
-- Perfil / estatísticas: `![Perfil](docs/screens/profile.png)`
+As capturas compartilhadas foram referenciadas abaixo. Salve os arquivos nas rotas indicadas (crie a pasta `docs/screens` se necessário):
+- Home / Destaque / “Me surpreenda”: ![Home](docs/screens/home-destaque.png)
+- Lista horizontal (“Visos recentemente”): ![Recentes](docs/screens/recentes.png)
+- Em alta (tabs Top Rated/Populares/Em cartaz/Em breve): ![Em alta](docs/screens/em-alta.png)
+- Minha lista (Quero ver/Assistidos/Favoritos): ![Minha lista](docs/screens/minha-lista.png)
+- Perfil / Estatísticas: ![Perfil](docs/screens/perfil.png)
 
-> Dica: use as imagens fornecidas no enunciado como referência ou salve seus próprios screenshots para manter o README sempre atualizado.
-
+> Se os arquivos ainda não estiverem no repositório, basta salvar as imagens fornecidas na conversa com esses nomes para que o README exiba corretamente.
