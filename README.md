@@ -66,4 +66,3 @@ As capturas compartilhadas foram referenciadas abaixo. Salve os arquivos nas rot
 - Minha lista (Quero ver/Assistidos/Favoritos): ![Minha lista](docs/screens/minha-lista.png)
 - Perfil / Estatísticas: ![Perfil](docs/screens/perfil.png)
 
-> Se os arquivos ainda não estiverem no repositório, basta salvar as imagens fornecidas na conversa com esses nomes para que o README exiba corretamente.
