@@ -1,23 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import MovieCard from '../components/MovieCard';
-import { getWatchlist, removeFromWatchlist } from '../models/movieRepository';
+import { getWatched } from '../models/movieRepository';
 import { useTheme, spacing, fonts } from '../styles/theme';
+import MovieDetailModal from './MovieDetailModal';
 
-const WatchlistScreen = ({ refreshKey, isActive, compact = false, hideHeading = false }) => {
+const WatchedScreen = ({ isActive, refreshKey, compact = false, hideHeading = false }) => {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [watchlist, setWatchlist] = useState([]);
+  const [watched, setWatched] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [detailVisible, setDetailVisible] = useState(false);
 
-  const loadWatchlist = useCallback(async () => {
+  const loadWatched = useCallback(async () => {
     try {
-      const list = await getWatchlist();
-      setWatchlist(list);
+      const list = await getWatched();
+      setWatched(list);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.warn('Erro ao carregar Quero ver', error);
+      console.warn('Erro ao carregar assistidos', error);
     } finally {
       setLoading(false);
     }
@@ -26,43 +29,48 @@ const WatchlistScreen = ({ refreshKey, isActive, compact = false, hideHeading = 
   useEffect(() => {
     if (isActive) {
       setLoading(true);
-      loadWatchlist();
+      loadWatched();
     }
-  }, [isActive, refreshKey, loadWatchlist]);
-
-  const handleRemove = async (movie) => {
-    try {
-      await removeFromWatchlist(movie.tmdb_id);
-      loadWatchlist();
-    } catch (error) {
-      Alert.alert('Ops!', 'Nao foi possivel remover da lista.');
-    }
-  };
+  }, [isActive, refreshKey, loadWatched]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadWatchlist();
+    await loadWatched();
     setRefreshing(false);
+  };
+
+  const openDetail = (movie) => {
+    setSelectedMovie(movie);
+    setDetailVisible(true);
+  };
+
+  const closeDetail = () => {
+    setSelectedMovie(null);
+    setDetailVisible(false);
+  };
+
+  const handleSelectFromModal = (movie) => {
+    if (!movie) return;
+    setSelectedMovie(movie);
+    setDetailVisible(true);
   };
 
   return (
     <View style={[styles.container, compact && styles.compactContainer]}>
-      {!hideHeading ? <Text style={styles.heading}>Quero ver</Text> : null}
+      {!hideHeading ? <Text style={styles.heading}>Assistidos</Text> : null}
       {loading ? (
         <View style={styles.loader}>
           <ActivityIndicator color={colors.primary} />
-          <Text style={styles.loadingText}>Carregando sua lista...</Text>
+          <Text style={styles.loadingText}>Carregando assistidos...</Text>
         </View>
       ) : (
         <FlatList
-          data={watchlist}
+          data={watched}
           keyExtractor={(item) => String(item.tmdb_id)}
-          renderItem={({ item }) => (
-            <MovieCard movie={item} onWatchlistRemove={handleRemove} />
-          )}
-          ListEmptyComponent={<Text style={styles.emptyText}>Nenhum filme na lista.</Text>}
+          renderItem={({ item }) => <MovieCard movie={item} onPress={() => openDetail(item)} />}
+          ListEmptyComponent={<Text style={styles.emptyText}>Nenhum filme marcado como assistido.</Text>}
           contentContainerStyle={[
-            watchlist.length === 0 ? styles.emptyContainer : styles.listContent,
+            watched.length === 0 ? styles.emptyContainer : styles.listContent,
             styles.listPadding,
           ]}
           showsVerticalScrollIndicator={false}
@@ -70,11 +78,18 @@ const WatchlistScreen = ({ refreshKey, isActive, compact = false, hideHeading = 
           onRefresh={handleRefresh}
         />
       )}
+
+      <MovieDetailModal
+        visible={detailVisible}
+        movieId={selectedMovie?.tmdb_id}
+        onClose={closeDetail}
+        onSelectMovie={handleSelectFromModal}
+      />
     </View>
   );
 };
 
-export default WatchlistScreen;
+export default WatchedScreen;
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -96,15 +111,15 @@ const createStyles = (colors) =>
       fontFamily: fonts.bold,
       marginBottom: spacing.xs,
     },
-    loadingText: {
-      color: colors.muted,
-      fontFamily: fonts.regular,
-    },
     loader: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
       marginBottom: spacing.sm,
+    },
+    loadingText: {
+      color: colors.muted,
+      fontFamily: fonts.regular,
     },
     emptyContainer: {
       flexGrow: 1,

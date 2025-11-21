@@ -13,14 +13,20 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter';
 import FavoritesScreen from './src/screens/FavoritesScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import TopMoviesScreen from './src/screens/TopMoviesScreen';
 import WatchlistScreen from './src/screens/WatchlistScreen';
+import WatchedScreen from './src/screens/WatchedScreen';
+import StatsScreen from './src/screens/StatsScreen';
+import LibraryScreen from './src/screens/LibraryScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 import { initDb } from './src/db/database';
 import { ThemeContext, colorSchemes, useTheme, fonts } from './src/styles/theme';
 
 const tabs = [
   { key: 'home', label: 'Buscar' },
-  { key: 'watchlist', label: 'Quero ver' },
-  { key: 'favorites', label: 'Favoritos' },
+  { key: 'top', label: 'Em alta' },
+  { key: 'library', label: 'Minha lista' },
+  { key: 'profile', label: 'Perfil' },
 ];
 
 const AppContent = ({
@@ -98,14 +104,23 @@ const AppContent = ({
             <HomeScreen
               onFavoriteAdded={onFavoriteAdded}
               onWatchlistUpdated={onWatchlistUpdated}
+              isActive={activeTab === 'home'}
             />
-          ) : activeTab === 'watchlist' ? (
-            <WatchlistScreen
-              isActive={activeTab === 'watchlist'}
-              refreshKey={watchlistRefreshKey}
+          ) : activeTab === 'top' ? (
+            <TopMoviesScreen isActive={activeTab === 'top'} />
+          ) : activeTab === 'library' ? (
+            <LibraryScreen
+              favoritesRefreshKey={favoritesRefreshKey}
+              watchlistRefreshKey={watchlistRefreshKey}
             />
+          ) : activeTab === 'profile' ? (
+            <ProfileScreen isActive={activeTab === 'profile'} />
           ) : (
-            <FavoritesScreen isActive={activeTab === 'favorites'} refreshKey={favoritesRefreshKey} />
+            <HomeScreen
+              onFavoriteAdded={onFavoriteAdded}
+              onWatchlistUpdated={onWatchlistUpdated}
+              isActive={false}
+            />
           )}
         </View>
 
