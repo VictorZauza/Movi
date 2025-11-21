@@ -2,6 +2,13 @@
 
 Movi é um app mobile (Expo/React Native) para descobrir, favoritar e gerenciar filmes, com suporte offline usando SQLite e dados da TMDB. Ele foi pensado para entregar uma experiência de streaming: carrosséis, destaques, recomendações, histórico, avaliações e listas pessoais.
 
+## Integrantes
+- Victor Zauza
+- Daniel dos Santos
+- Augusto Flávio
+- Gustavo Oliveira
+- Iohann Delvalle
+
 ## Sumário
 - Contexto e objetivo
 - Tecnologias
