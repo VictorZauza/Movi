@@ -1,14 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   PanResponder,
+  Animated,
+  Easing,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  useColorScheme,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SvgXml } from 'react-native-svg';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter';
 import FavoritesScreen from './src/screens/FavoritesScreen';
@@ -16,18 +19,29 @@ import HomeScreen from './src/screens/HomeScreen';
 import TopMoviesScreen from './src/screens/TopMoviesScreen';
 import WatchlistScreen from './src/screens/WatchlistScreen';
 import WatchedScreen from './src/screens/WatchedScreen';
-import StatsScreen from './src/screens/StatsScreen';
 import LibraryScreen from './src/screens/LibraryScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import { initDb } from './src/db/database';
 import { ThemeContext, colorSchemes, useTheme, fonts } from './src/styles/theme';
 
 const tabs = [
-  { key: 'home', label: 'Buscar' },
-  { key: 'top', label: 'Em alta' },
-  { key: 'library', label: 'Minha lista' },
-  { key: 'profile', label: 'Perfil' },
+  { key: 'home', icon: 'search-outline', activeIcon: 'search' },
+  { key: 'top', icon: 'flame-outline', activeIcon: 'flame' },
+  { key: 'library', icon: 'bookmark-outline', activeIcon: 'bookmark' },
+  { key: 'profile', icon: 'person-circle-outline', activeIcon: 'person-circle' },
 ];
+
+const logoXml = `
+<svg width="64" height="64" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E11D48" offset="0%"/>
+      <stop stop-color="#FF5F6D" offset="100%"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#g)"/>
+  <path d="M150 368V160H196L256 274L316 160H362V368H318V245L266 340H246L194 245V368H150Z" fill="white"/>
+</svg>`;
 
 const AppContent = ({
   activeTab,
@@ -37,13 +51,13 @@ const AppContent = ({
   onFavoriteAdded,
   onWatchlistUpdated,
   fontsLoaded,
-  onToggleTheme,
-  themeName,
 }) => {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const statusBarStyle = colors.isDark ? 'light' : 'dark';
+  const statusBarStyle = 'light';
   const tabKeys = useMemo(() => tabs.map((tab) => tab.key), []);
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const prevTabIndex = useRef(0);
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -55,6 +69,20 @@ const AppContent = ({
       };
     }
   }, [fontsLoaded, colors.text]);
+
+  useEffect(() => {
+    const currentIndex = tabKeys.indexOf(activeTab);
+    const previousIndex = prevTabIndex.current;
+    const direction = currentIndex > previousIndex ? 1 : -1;
+    slideAnim.setValue(40 * direction);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+    prevTabIndex.current = currentIndex;
+  }, [activeTab, slideAnim, tabKeys]);
 
   const panResponder = useMemo(
     () =>
@@ -93,13 +121,13 @@ const AppContent = ({
         <StatusBar style={statusBarStyle} />
 
         <View style={styles.header}>
-          <Text style={styles.brand}>Movi</Text>
-          <TouchableOpacity onPress={onToggleTheme}>
-            <Text style={styles.themeToggleText}>{themeName === 'dark' ? '☀️' : '🌙'}</Text>
-          </TouchableOpacity>
+          <View style={styles.brandRow}>
+            <SvgXml xml={logoXml} width={28} height={28} />
+            <Text style={styles.brand}>Movi</Text>
+          </View>
         </View>
 
-        <View style={styles.content}>
+        <Animated.View style={[styles.content, { transform: [{ translateX: slideAnim }] }]}>
           {activeTab === 'home' ? (
             <HomeScreen
               onFavoriteAdded={onFavoriteAdded}
@@ -122,7 +150,7 @@ const AppContent = ({
               isActive={false}
             />
           )}
-        </View>
+        </Animated.View>
 
         <View style={styles.tabBar}>
           {tabs.map((tab) => {
@@ -133,7 +161,12 @@ const AppContent = ({
                 style={[styles.tabButton, isActive && styles.tabButtonActive]}
                 onPress={() => setActiveTab(tab.key)}
               >
-                <Text style={[styles.tabText, isActive && styles.tabTextActive]}>{tab.label}</Text>
+                <Ionicons
+                  name={isActive ? tab.activeIcon : tab.icon}
+                  size={20}
+                  color={isActive ? colors.onPrimary : colors.muted}
+                  style={styles.tabIcon}
+                />
               </TouchableOpacity>
             );
           })}
@@ -144,9 +177,6 @@ const AppContent = ({
 };
 
 export default function App() {
-  const systemScheme = useColorScheme() ?? 'light';
-  const [themeName, setThemeName] = useState(systemScheme);
-  const [hasManualOverride, setHasManualOverride] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [favoritesRefreshKey, setFavoritesRefreshKey] = useState(Date.now());
   const [watchlistRefreshKey, setWatchlistRefreshKey] = useState(Date.now());
@@ -163,12 +193,6 @@ export default function App() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!hasManualOverride) {
-      setThemeName(systemScheme);
-    }
-  }, [systemScheme, hasManualOverride]);
-
   const handleFavoriteAdded = () => {
     setFavoritesRefreshKey(Date.now());
   };
@@ -177,14 +201,9 @@ export default function App() {
     setWatchlistRefreshKey(Date.now());
   };
 
-  const toggleTheme = () => {
-    setHasManualOverride(true);
-    setThemeName((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
-
   const themeValue = useMemo(
-    () => ({ colors: colorSchemes[themeName] || colorSchemes.light }),
-    [themeName],
+    () => ({ colors: colorSchemes.dark }),
+    [],
   );
 
   return (
@@ -197,8 +216,6 @@ export default function App() {
         onFavoriteAdded={handleFavoriteAdded}
         onWatchlistUpdated={handleWatchlistUpdated}
         fontsLoaded={fontsLoaded}
-        onToggleTheme={toggleTheme}
-        themeName={themeName}
       />
     </ThemeContext.Provider>
   );
@@ -221,17 +238,17 @@ const createStyles = (colors) =>
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 8,
+      paddingVertical: 10,
+    },
+    brandRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
     },
     brand: {
       fontFamily: fonts.bold,
-      fontSize: 20,
+      fontSize: 18,
       color: colors.text,
-    },
-    themeToggleText: {
-      color: colors.text,
-      fontFamily: fonts.bold,
-      fontSize: 22,
     },
     content: {
       flex: 1,
@@ -241,21 +258,22 @@ const createStyles = (colors) =>
       borderTopWidth: 1,
       borderTopColor: colors.border,
       backgroundColor: colors.secondary,
+      height: 40,
     },
     tabButton: {
       flex: 1,
-      paddingVertical: 14,
+      height: '100%',
+      paddingVertical: 0,
       alignItems: 'center',
+      justifyContent: 'center',
+      borderTopWidth: 2,
+      borderTopColor: 'transparent',
     },
     tabButtonActive: {
       backgroundColor: colors.primary,
+      borderTopColor: colors.onPrimary,
     },
-    tabText: {
-      color: colors.muted,
-      fontFamily: fonts.medium,
-    },
-    tabTextActive: {
-      color: colors.onPrimary,
-      fontFamily: fonts.bold,
+    tabIcon: {
+      marginTop: 0,
     },
   });

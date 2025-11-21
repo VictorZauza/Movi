@@ -5,6 +5,7 @@ import {
   Animated,
   FlatList,
   Image,
+  ImageBackground,
   Modal,
   ScrollView,
   StyleSheet,
@@ -14,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SvgXml } from 'react-native-svg';
 import MovieCard from '../components/MovieCard';
 import {
   addFavorite,
@@ -37,6 +39,18 @@ const sourceLabelMap = {
   tmdb: { title: 'Dados carregados da internet (TMDB)', icon: '☁️', type: 'online' },
   cache: { title: 'Dados carregados do cache (offline)', icon: '☁️✖', type: 'offline' },
 };
+
+const logoXml = `
+<svg width="64" height="64" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E11D48" offset="0%"/>
+      <stop stop-color="#FF5F6D" offset="100%"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#g)"/>
+  <path d="M150 368V160H196L256 274L316 160H362V368H318V245L266 340H246L194 245V368H150Z" fill="white"/>
+</svg>`;
 
 const HomeScreen = ({ onFavoriteAdded, onWatchlistUpdated, isActive }) => {
   const { colors } = useTheme();
@@ -75,6 +89,13 @@ const HomeScreen = ({ onFavoriteAdded, onWatchlistUpdated, isActive }) => {
     popularBR: [],
     recommended: [],
   });
+  const heroMovie = useMemo(
+    () =>
+      (sectionData.trending && sectionData.trending[0]) ||
+      (sectionData.popularBR && sectionData.popularBR[0]) ||
+      null,
+    [sectionData],
+  );
   const [surpriseLoading, setSurpriseLoading] = useState(false);
 
   const loadSearchHistory = useCallback(async () => {
@@ -513,6 +534,40 @@ const HomeScreen = ({ onFavoriteAdded, onWatchlistUpdated, isActive }) => {
 
       {!query.trim() ? (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.dynamicContent}>
+          {heroMovie ? (
+            <TouchableOpacity style={styles.heroCard} activeOpacity={0.92} onPress={() => openDetail(heroMovie)}>
+              <ImageBackground
+                source={heroMovie.poster_url ? { uri: heroMovie.poster_url } : null}
+                style={styles.heroImage}
+                imageStyle={styles.heroImageBorder}
+              >
+                <View style={styles.heroOverlay} />
+                <View style={styles.heroContent}>
+                  <View style={styles.heroTag}>
+                    <Ionicons name="flame" size={14} color={colors.onPrimary} />
+                    <Text style={styles.heroTagText}>Em destaque</Text>
+                  </View>
+                  <Text style={styles.heroTitle} numberOfLines={2}>
+                    {heroMovie.title}
+                  </Text>
+                  {heroMovie.overview ? (
+                    <Text style={styles.heroOverview} numberOfLines={3}>
+                      {heroMovie.overview}
+                    </Text>
+                  ) : null}
+                  <View style={styles.heroActions}>
+                    <TouchableOpacity style={styles.heroPrimary} onPress={() => openDetail(heroMovie)}>
+                      <Text style={styles.heroPrimaryText}>Ver detalhes</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.heroSecondary} onPress={handleSurprise}>
+                      <Text style={styles.heroSecondaryText}>Me surpreenda</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ImageBackground>
+            </TouchableOpacity>
+          ) : null}
+
           {recentlyViewed.length ? (
             <View style={styles.recentSection}>
               <View style={styles.sectionHeader}>
@@ -527,13 +582,21 @@ const HomeScreen = ({ onFavoriteAdded, onWatchlistUpdated, isActive }) => {
                 horizontal
                 renderItem={({ item }) => (
                   <TouchableOpacity style={styles.recentCard} onPress={() => openDetail(item)}>
-                    {item.poster_url ? (
-                      <Image source={{ uri: item.poster_url }} style={styles.recentPoster} />
-                    ) : (
-                      <View style={[styles.recentPoster, styles.recentPosterPlaceholder]}>
-                        <Text style={styles.recentPosterText}>Sem imagem</Text>
-                      </View>
-                    )}
+                    <View style={styles.recentPosterWrapper}>
+                      {item.poster_url ? (
+                        <Image source={{ uri: item.poster_url }} style={styles.recentPoster} />
+                      ) : (
+                        <View style={[styles.recentPoster, styles.recentPosterPlaceholder]}>
+                          <Text style={styles.recentPosterText}>Sem imagem</Text>
+                        </View>
+                      )}
+                      {typeof item.vote_average === 'number' ? (
+                        <View style={styles.ratingBadge}>
+                          <Ionicons name="star" size={12} color={colors.onPrimary} />
+                          <Text style={styles.ratingBadgeText}>{(item.vote_average || 0).toFixed(1)}</Text>
+                        </View>
+                      ) : null}
+                    </View>
                     <Text style={styles.recentTitle} numberOfLines={2}>
                       {item.title}
                     </Text>
@@ -557,13 +620,21 @@ const HomeScreen = ({ onFavoriteAdded, onWatchlistUpdated, isActive }) => {
             keyExtractor={(item) => String(item.tmdb_id)}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.recentCard} onPress={() => openDetail(item)}>
-                {item.poster_url ? (
-                  <Image source={{ uri: item.poster_url }} style={styles.recentPoster} />
-                ) : (
-                  <View style={[styles.recentPoster, styles.recentPosterPlaceholder]}>
-                    <Text style={styles.recentPosterText}>Sem imagem</Text>
-                  </View>
-                )}
+                <View style={styles.recentPosterWrapper}>
+                  {item.poster_url ? (
+                    <Image source={{ uri: item.poster_url }} style={styles.recentPoster} />
+                  ) : (
+                    <View style={[styles.recentPoster, styles.recentPosterPlaceholder]}>
+                      <Text style={styles.recentPosterText}>Sem imagem</Text>
+                    </View>
+                  )}
+                  {typeof item.vote_average === 'number' ? (
+                    <View style={styles.ratingBadge}>
+                      <Ionicons name="star" size={12} color={colors.onPrimary} />
+                      <Text style={styles.ratingBadgeText}>{(item.vote_average || 0).toFixed(1)}</Text>
+                    </View>
+                  ) : null}
+                </View>
                 <Text style={styles.recentTitle} numberOfLines={2}>
                   {item.title}
                 </Text>
@@ -585,13 +656,21 @@ const HomeScreen = ({ onFavoriteAdded, onWatchlistUpdated, isActive }) => {
             keyExtractor={(item) => String(item.tmdb_id)}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.recentCard} onPress={() => openDetail(item)}>
-                {item.poster_url ? (
-                  <Image source={{ uri: item.poster_url }} style={styles.recentPoster} />
-                ) : (
-                  <View style={[styles.recentPoster, styles.recentPosterPlaceholder]}>
-                    <Text style={styles.recentPosterText}>Sem imagem</Text>
-                  </View>
-                )}
+                <View style={styles.recentPosterWrapper}>
+                  {item.poster_url ? (
+                    <Image source={{ uri: item.poster_url }} style={styles.recentPoster} />
+                  ) : (
+                    <View style={[styles.recentPoster, styles.recentPosterPlaceholder]}>
+                      <Text style={styles.recentPosterText}>Sem imagem</Text>
+                    </View>
+                  )}
+                  {typeof item.vote_average === 'number' ? (
+                    <View style={styles.ratingBadge}>
+                      <Ionicons name="star" size={12} color={colors.onPrimary} />
+                      <Text style={styles.ratingBadgeText}>{(item.vote_average || 0).toFixed(1)}</Text>
+                    </View>
+                  ) : null}
+                </View>
                 <Text style={styles.recentTitle} numberOfLines={2}>
                   {item.title}
                 </Text>
@@ -613,13 +692,21 @@ const HomeScreen = ({ onFavoriteAdded, onWatchlistUpdated, isActive }) => {
             keyExtractor={(item) => String(item.tmdb_id)}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.recentCard} onPress={() => openDetail(item)}>
-                {item.poster_url ? (
-                  <Image source={{ uri: item.poster_url }} style={styles.recentPoster} />
-                ) : (
-                  <View style={[styles.recentPoster, styles.recentPosterPlaceholder]}>
-                    <Text style={styles.recentPosterText}>Sem imagem</Text>
-                  </View>
-                )}
+                <View style={styles.recentPosterWrapper}>
+                  {item.poster_url ? (
+                    <Image source={{ uri: item.poster_url }} style={styles.recentPoster} />
+                  ) : (
+                    <View style={[styles.recentPoster, styles.recentPosterPlaceholder]}>
+                      <Text style={styles.recentPosterText}>Sem imagem</Text>
+                    </View>
+                  )}
+                  {typeof item.vote_average === 'number' ? (
+                    <View style={styles.ratingBadge}>
+                      <Ionicons name="star" size={12} color={colors.onPrimary} />
+                      <Text style={styles.ratingBadgeText}>{(item.vote_average || 0).toFixed(1)}</Text>
+                    </View>
+                  ) : null}
+                </View>
                 <Text style={styles.recentTitle} numberOfLines={2}>
                   {item.title}
                 </Text>
@@ -841,6 +928,23 @@ const createStyles = (colors) =>
       fontFamily: fonts.bold,
       marginBottom: spacing.md,
     },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+      gap: spacing.sm,
+    },
+    brand: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    brandText: {
+      color: colors.text,
+      fontFamily: fonts.bold,
+      fontSize: 17,
+    },
     searchRow: {
       flexDirection: 'row',
       marginBottom: spacing.sm,
@@ -967,6 +1071,86 @@ const createStyles = (colors) =>
     dynamicContent: {
       paddingBottom: spacing.md,
     },
+    heroCard: {
+      borderRadius: radius.md,
+      overflow: 'hidden',
+      marginBottom: spacing.md,
+      elevation: 6,
+      shadowColor: colors.isDark ? '#000' : '#000',
+      shadowOpacity: 0.25,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 8 },
+    },
+    heroImage: {
+      width: '100%',
+      height: 260,
+      justifyContent: 'flex-end',
+    },
+    heroImageBorder: {
+      borderRadius: radius.md,
+    },
+    heroOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+    },
+    heroContent: {
+      padding: spacing.lg,
+      gap: spacing.xs,
+    },
+    heroTag: {
+      alignSelf: 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: radius.sm,
+      marginBottom: spacing.xs,
+    },
+    heroTagText: {
+      color: colors.onPrimary,
+      fontFamily: fonts.medium,
+      marginLeft: spacing.xs / 2,
+      fontSize: 12,
+    },
+    heroTitle: {
+      color: colors.onPrimary,
+      fontFamily: fonts.bold,
+      fontSize: 22,
+    },
+    heroOverview: {
+      color: colors.onPrimary,
+      fontFamily: fonts.regular,
+      lineHeight: 20,
+      opacity: 0.9,
+    },
+    heroActions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    heroPrimary: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: radius.sm,
+    },
+    heroPrimaryText: {
+      color: colors.onPrimary,
+      fontFamily: fonts.bold,
+    },
+    heroSecondary: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: radius.sm,
+      borderWidth: 1,
+      borderColor: colors.onPrimary,
+      backgroundColor: 'rgba(0,0,0,0.25)',
+    },
+    heroSecondaryText: {
+      color: colors.onPrimary,
+      fontFamily: fonts.medium,
+    },
     recentSection: {
       marginBottom: spacing.md,
     },
@@ -975,17 +1159,24 @@ const createStyles = (colors) =>
       paddingRight: spacing.sm,
     },
     recentCard: {
-      width: 120,
+      width: 150,
       marginRight: spacing.sm,
       padding: spacing.sm,
       borderRadius: radius.sm,
-      borderWidth: 1,
-      borderColor: colors.border,
+      borderWidth: 0,
       backgroundColor: colors.surface,
+      elevation: 5,
+      shadowColor: colors.isDark ? '#000' : '#000',
+      shadowOpacity: 0.12,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 6 },
+    },
+    recentPosterWrapper: {
+      position: 'relative',
     },
     recentPoster: {
       width: '100%',
-      height: 150,
+      height: 200,
       borderRadius: radius.sm,
       marginBottom: spacing.xs,
       backgroundColor: colors.border,
@@ -999,6 +1190,23 @@ const createStyles = (colors) =>
       fontFamily: fonts.regular,
       fontSize: 12,
       textAlign: 'center',
+    },
+    ratingBadge: {
+      position: 'absolute',
+      top: spacing.xs,
+      right: spacing.xs,
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+      borderRadius: radius.sm,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    ratingBadgeText: {
+      color: colors.onPrimary,
+      fontFamily: fonts.bold,
+      fontSize: 12,
     },
     recentTitle: {
       color: colors.text,

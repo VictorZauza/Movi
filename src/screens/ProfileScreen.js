@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View, Image } from 'react-native';
+import { ActivityIndicator, Image, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getStats } from '../models/movieRepository';
-import { useTheme, spacing, radius, fonts } from '../styles/theme';
+import { fonts, radius, spacing, useTheme } from '../styles/theme';
 
 const Stat = ({ label, value }) => {
   const { colors } = useTheme();

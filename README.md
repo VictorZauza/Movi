@@ -1,66 +1,69 @@
-# Movi
+# Movi – Guia do Aplicativo
 
-Aplicativo mobile criado com Expo que permite buscar filmes no The Movie Database (TMDB), favoritar títulos, manter uma lista “Quero ver” e utilizar dados offline com cache em SQLite.
+Movi é um app mobile (Expo/React Native) para descobrir, favoritar e gerenciar filmes, com suporte offline usando SQLite e dados da TMDB. Ele foi pensado para entregar uma experiência de streaming: carrosséis, destaques, recomendações, histórico, avaliações e listas pessoais.
+
+## Sumário
+- Contexto e objetivo
+- Tecnologias
+- Como rodar localmente
+- Como usar
+- Principais funcionalidades
+- Recursos visuais (screenshots)
+
+## Contexto e objetivo
+Movi resolve dois pontos: descobrir bons filmes de forma visual e manter tudo salvo localmente (favoritos, assistidos, comentários, humor, notas) mesmo offline. Ele usa a API da TMDB para dados oficiais e o SQLite para persistência local.
 
 ## Tecnologias
+- Expo + React Native
+- SQLite (expo-sqlite)
+- TMDB API (fetch)
+- React Native Animated para transições
+- react-native-svg para a logo/iconografia
 
-- React Native com Expo
-- `expo-sqlite` para cache local, favoritos e watchlist
-- `fetch` nativo para consumo da API TMDB
-
-## Configuração da TMDB API
-
-1. Crie ou obtenha uma chave em [https://www.themoviedb.org/](https://www.themoviedb.org/).
-2. Abra `src/config/tmdbConfig.js`.
-3. Substitua o valor `SUA_CHAVE_TMDB_AQUI` pela sua chave real.
-
-```js
-export const TMDB_API_KEY = 'COLOQUE_SUA_CHAVE_AQUI';
+## Como rodar localmente
+1) Instale dependências  
+```bash
+npm install
 ```
 
-## Como rodar
+2) Configure a chave TMDB  
+Edite `src/config/tmdbConfig.js` e coloque sua chave em `TMDB_API_KEY`.  
 
-1. Instale as dependências:
-
-   ```bash
-   npm install --legacy-peer-deps
-   ```
-
-2. Inicie o app no Expo Go ou emulador:
-
-   ```bash
-   npx expo start
-   ```
-
-## Estrutura principal
-
-```
-movi/
-├── App.js                 # Tabs simples (Buscar, Quero ver, Favoritos)
-├── src/
-│   ├── api/tmdbService.js # Consumo da TMDB
-│   ├── config/tmdbConfig.js
-│   ├── db/database.js     # Inicialização do SQLite
-│   ├── models/movieRepository.js
-│   ├── components/
-│   │   ├── MovieCard.js
-│   │   └── StarRating.js
-│   ├── screens/
-│   │   ├── HomeScreen.js
-│   │   ├── FavoritesScreen.js
-│   │   ├── WatchlistScreen.js
-│   │   └── MovieDetailModal.js
-│   ├── styles/theme.js
-│   └── utils/ratings.js
+3) Inicie o projeto  
+```bash
+npx expo start
 ```
 
-## Funcionalidades
+4) Abra no emulador ou Expo Go (Android/iOS).
 
-- Busca filmes da TMDB (título, data, sinopse e pôster) e exibe a fonte dos dados (online ou cache).
-- Salva o resultado da busca no SQLite para uso offline e indica quando o dado veio do cache.
-- Permite favoritar filmes com nota personalizada (estrelas).
-- Lista “Quero ver” (watchlist) para filmes que o usuário pretende assistir.
-- Modal de filtros/ordenação com opções avançadas (ano, nota mínima, idioma, apenas pôster/sinopse).
-- Detalhe completo: pôster, sinopse, nota TMDB em estrelas, gêneros, duração, elenco principal e acesso ao trailer.
-- Conversão automática da nota TMDB para sistema de estrelas (meia estrela = 1 ponto).
-- Tema claro/escuro com alternância manual e detecção automática pelo sistema.
+## Como usar
+- Buscar filmes: digite o título e toque em “Buscar”; use filtros/ordenação para refinar.
+- Destaques e carrosséis: navegue pelos carrosséis “populares da semana”, “em alta no Brasil” e recomendações baseadas nos seus favoritos.
+- “Me surpreenda”: sugere um filme aleatório com nota ≥7 alinhado aos gêneros que você mais assiste.
+- Detalhes do filme: veja trailer, provedores “Onde assistir”, extras de vídeo, notas, elenco, sinopse e coleções.
+- Avaliar e comentar: marque como assistido, defina humor, deixe nota e comentário; tudo salvo no SQLite.
+- Favoritos / Quero ver / Assistidos: gerencie suas listas em “Minha lista”.
+- Offline/cache: quando sem rede, o app indica que os dados vieram do cache.
+- Compartilhar: envie detalhes ou card social com pôster, nota e comentário.
+
+## Principais funcionalidades
+- Busca com histórico e cache offline
+- Carrosséis de destaque, populares, recomendações
+- “Me surpreenda” (aleatório filtrado por gênero/nota ≥7)
+- Favoritos, Quero ver, Assistidos com rating, humor e diário
+- Recomendações baseadas nos seus favoritos
+- “Onde assistir” (providers TMDB: streaming, aluguel, compra, gratuito)
+- Extras de vídeo (teasers, entrevistas, BTS)
+- Mode de exibição compacta/suprimida e ícones em toda navegação
+- Compartilhamento e card social via share
+- Estatísticas do usuário (favoritos, assistidos, nota média, gênero/ano mais assistido, filme mais avaliado)
+
+## Recursos visuais (screenshots)
+Adicione suas capturas na pasta `docs/screens` (sugestão) e referencie-as aqui:
+- Home / busca: `![Home](docs/screens/home.png)`
+- Em alta: `![Em alta](docs/screens/top.png)`
+- Minha lista: `![Minha lista](docs/screens/library.png)`
+- Perfil / estatísticas: `![Perfil](docs/screens/profile.png)`
+
+> Dica: use as imagens fornecidas no enunciado como referência ou salve seus próprios screenshots para manter o README sempre atualizado.
+

@@ -555,7 +555,23 @@ export const fetchWatchProviders = async (movieId) => {
   }
 };
 
-const POPULAR_COLLECTION_IDS = [86311, 263, 1241, 9485, 10, 556, 10194]; // Avengers, Batman, Harry Potter, Fast & Furious, Star Wars, Spider-Man, LOTR
+// Coleções populares; ids conferidos para evitar erros de fetch
+const POPULAR_COLLECTION_IDS = [
+  86311, // Avengers
+  263, // Batman
+  1241, // Harry Potter
+  9485, // Fast & Furious
+  10, // Star Wars
+  556, // Spider-Man
+  119, // The Lord of the Rings
+  84, // Indiana Jones
+  2344, // The Matrix
+  404609, // John Wick
+  8091, // Alien
+  645, // James Bond
+  328, // Jurassic Park
+  295, // Pirates of the Caribbean
+];
 
 export const fetchPopularCollections = async () => {
   const results = [];
